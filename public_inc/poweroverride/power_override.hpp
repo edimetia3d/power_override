@@ -16,7 +16,7 @@ void *DlOpenSym(const char *filename, const char *symbol);
 }
 
 /**
- * POWER_OVERRIDE is used to define a function to override function in specific lib by LD_PRELOAD
+ * POWER_OVERRIDE is used to help you override functions that loaded by dlsym
  * filename : same as `filename` in dlopen
  * eg. void foo(int a,int b) -> POWER_OVERRIDE(void,foo,(int a,int b))
  * Note1: POWER_OVERRIDE can only override C style functions
@@ -25,10 +25,11 @@ void *DlOpenSym(const char *filename, const char *symbol);
 
 #define POWER_OVERRIDE(ret_t, funcname, params, filename) \
 namespace POWEROVERRIDE_NAMESPACE(funcname) {        \
-    ret_t POWEROVERRIDE_CONCAT(impl_,funcname) params;        \
-    void * RawFn(){                                      \
+    ret_t POWEROVERRIDE_CONCAT(impl_,funcname) params;    \
+    using RawFn_t = ret_t (*) params;                         \
+    RawFn_t RawFn(){                                      \
       static auto ret = poweroverride::DlOpenSym(filename,POWEROVERRIDE_STRINGIFY(funcname)); \
-      return ret;\
+      return (RawFn_t)ret;\
     }                                                      \
     static poweroverride::OverrideFuncRegister POWEROVERRIDE_CONCAT(reg_c_,funcname) (filename,POWEROVERRIDE_STRINGIFY(funcname), reinterpret_cast<void *>(&POWEROVERRIDE_CONCAT(impl_,funcname)),__FILE__,__LINE__); \
 }                                               \

@@ -5,10 +5,8 @@
 #include "poweroverride/power_override.hpp"
 
 #define foo refoo
-
-static void base_foo(int a, int b, void *raw_fn_in) {
-  using Fn_t = void (*)(int, int);
-  auto raw_fn = (Fn_t) (raw_fn_in);
+using Fn_t = void (*)(int, int);
+static void base_foo(int a, int b, Fn_t raw_fn) {
   printf("overrode [%s] called\n", __func__);
   printf("=====call raw_fn start=====\n");
   if (raw_fn) {
@@ -22,7 +20,7 @@ static void base_foo(int a, int b, void *raw_fn_in) {
 extern "C" {
 void foo(int a, int b) {
   auto raw = dlsym(RTLD_NEXT, "refoo");
-  return base_foo(a, b, raw);
+  return base_foo(a, b, (Fn_t) raw);
 }
 }
 
