@@ -7,7 +7,6 @@
 #include <string>
 
 #include <dlfcn.h>
-#include <cassert>
 
 #include "powerhook/tool/real_dlsym.hpp"
 
@@ -18,59 +17,42 @@ inline bool has_key(const T1 &container, const T2 &key) {
   return container.find(key) != container.end();
 }
 
-static std::map<std::string, void *> &symbol_overrode_fn_map() {
-  static std::map<std::string, void *> map;
+using SonameFnMap_t = std::map<void *, void *>;
+static std::map<std::string, SonameFnMap_t> &symbol_overrode_fn_map() {
+  static std::map<std::string, SonameFnMap_t> map;
   return map;
 }
 
-static std::map<std::string, void *> &symbol_handle_map() {
-  static std::map<std::string, void *> map;
-  return map;
+OverrideFuncRegister::OverrideFuncRegister(const char *filename,
+                                           const char *func_name,
+                                           void *fn_ptr,
+                                           const char *src_file,
+                                           int src_line) {
+  printf("New override [%s] on disk [%s] reged in file: %s:%d\n", func_name, filename, src_file, src_line);
+  auto handle = dlopen(filename, RTLD_LAZY);
+  symbol_overrode_fn_map()[std::string(func_name)][handle] = fn_ptr;
 }
-
-OverrideFuncRegister::OverrideFuncRegister(const char *func_name, void *fn_ptr, const char *file, int line) {
-  printf("New override [%s] reged from file: %s:%d\n", func_name, file, line);
-  symbol_overrode_fn_map()[std::string(func_name)] = fn_ptr;
+void *DlOpenSym(const char *filename, const char *symbol) {
+  auto handle = dlopen(filename, RTLD_LAZY);
+  auto ret = real_dlsym(handle, symbol);
+  return ret;
 }
 }
 
 using powerhook::symbol_overrode_fn_map;
-using powerhook::symbol_handle_map;
 using powerhook::has_key;
 void *dlsym(void *handle, const char *symbol) {
-  if (handle == RTLD_DEFAULT) {
-    // RTLD_DEFAULT will be overrode by real_dlsym automatically
-    return powerhook::real_dlsym(RTLD_DEFAULT, symbol);
-  }
 
-  auto key = std::string(symbol);
-  if (handle == RTLD_NEXT) {
-    // Looking for "next" from global or some shared object
-    // note: if there are multi shared object that providing symbol,this branch will return nullptr
-    auto possible = powerhook::real_dlsym(RTLD_NEXT, symbol);
-    if (!possible) {
-      if (has_key(symbol_handle_map(), key)) {
-        possible = powerhook::real_dlsym(symbol_handle_map()[key], symbol);
+  if (handle != RTLD_NEXT && handle != RTLD_DEFAULT) {
+    auto funcname = std::string(symbol);
+
+    if (has_key(symbol_overrode_fn_map(), funcname)) {
+      if (has_key(symbol_overrode_fn_map()[funcname], handle)) {
+        return symbol_overrode_fn_map()[funcname][handle];
       }
     }
-    return possible;
+
   }
 
-  assert(handle != RTLD_NEXT && handle != RTLD_DEFAULT); // handle must be a real handle
-
-  // if symbol is a power_overode one, we return the overrode version
-  if (has_key(symbol_overrode_fn_map(), key)) {
-    if (has_key(symbol_handle_map(), key)) {
-      auto old_handle = symbol_handle_map()[key];
-      if (old_handle != handle) {
-        symbol_handle_map()[key] = nullptr;
-      }
-    } else {
-      symbol_handle_map()[key] = handle;
-    }
-    return symbol_overrode_fn_map()[key];
-  } else {
-    return powerhook::real_dlsym(handle, symbol);
-  }
-  return nullptr;
+  return powerhook::real_dlsym(handle, symbol);
 }
