@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include <dlfcn.h>
-#include "powerhook/power_override.hpp"
+#include "poweroverride/power_override.hpp"
 
 #define foo refoo
 

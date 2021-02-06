@@ -1,16 +1,16 @@
 //
 // Created by edi on 2/5/21.
 //
-#include "powerhook/power_override.hpp"
+#include "poweroverride/power_override.hpp"
 
 #include <map>
 #include <string>
 
 #include <dlfcn.h>
 
-#include "powerhook/tool/real_dlsym.hpp"
+#include "poweroverride/tool/real_dlsym.hpp"
 
-namespace powerhook {
+namespace poweroverride {
 
 template<class T1, class T2>
 inline bool has_key(const T1 &container, const T2 &key) {
@@ -39,8 +39,8 @@ void *DlOpenSym(const char *filename, const char *symbol) {
 }
 }
 
-using powerhook::symbol_overrode_fn_map;
-using powerhook::has_key;
+using poweroverride::symbol_overrode_fn_map;
+using poweroverride::has_key;
 void *dlsym(void *handle, const char *symbol) {
 
   if (handle != RTLD_NEXT && handle != RTLD_DEFAULT) {
@@ -54,5 +54,5 @@ void *dlsym(void *handle, const char *symbol) {
 
   }
 
-  return powerhook::real_dlsym(handle, symbol);
+  return poweroverride::real_dlsym(handle, symbol);
 }

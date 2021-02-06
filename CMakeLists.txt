@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(PowerHook)
+project(PowerOverride)
 add_subdirectory(public_inc)
 
 add_subdirectory(src)

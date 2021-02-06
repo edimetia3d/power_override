@@ -5,7 +5,7 @@ add_library(naive_override_foo SHARED naive_override_foo.cpp)
 target_link_libraries(naive_override_foo dl)
 
 add_library(override_foo SHARED override_foo.cpp)
-target_link_libraries(override_foo powerhook)
+target_link_libraries(override_foo poweroverride)
 
 add_custom_target(override_test_libs)
 add_dependencies(override_test_libs override_foo naive_override_foo foo)

@@ -2,12 +2,12 @@
 // Created by edi on 2/5/21.
 //
 
-#ifndef POWERHOOK_POWER_OVERRIDE_HPP
-#define POWERHOOK_POWER_OVERRIDE_HPP
+#ifndef POWEROVERRIDE_POWER_OVERRIDE_HPP
+#define POWEROVERRIDE_POWER_OVERRIDE_HPP
 
-#include "powerhook/common.h"
+#include "poweroverride/common.h"
 
-namespace powerhook {
+namespace poweroverride {
 struct OverrideFuncRegister {
   OverrideFuncRegister(const char *filename, const char *func_name, void *fn_ptr, const char *src_file, int src_line);
 };
@@ -24,14 +24,14 @@ void *DlOpenSym(const char *filename, const char *symbol);
  */
 
 #define POWER_OVERRIDE(ret_t, funcname, params, filename) \
-namespace POWERHOOK_NAMESPACE(funcname) {        \
-    ret_t POWERHOOK_CONCAT(impl_,funcname) params;        \
+namespace POWEROVERRIDE_NAMESPACE(funcname) {        \
+    ret_t POWEROVERRIDE_CONCAT(impl_,funcname) params;        \
     void * RawFn(){                                      \
-      static auto ret = powerhook::DlOpenSym(filename,POWERHOOK_STRINGIFY(funcname)); \
+      static auto ret = poweroverride::DlOpenSym(filename,POWEROVERRIDE_STRINGIFY(funcname)); \
       return ret;\
     }                                                      \
-    static powerhook::OverrideFuncRegister POWERHOOK_CONCAT(reg_c_,funcname) (filename,POWERHOOK_STRINGIFY(funcname), reinterpret_cast<void *>(&POWERHOOK_CONCAT(impl_,funcname)),__FILE__,__LINE__); \
+    static poweroverride::OverrideFuncRegister POWEROVERRIDE_CONCAT(reg_c_,funcname) (filename,POWEROVERRIDE_STRINGIFY(funcname), reinterpret_cast<void *>(&POWEROVERRIDE_CONCAT(impl_,funcname)),__FILE__,__LINE__); \
 }                                               \
-ret_t POWERHOOK_NAMESPACE(funcname)::POWERHOOK_CONCAT(impl_,funcname) params
+ret_t POWEROVERRIDE_NAMESPACE(funcname)::POWEROVERRIDE_CONCAT(impl_,funcname) params
 
-#endif //POWERHOOK_POWER_OVERRIDE_HPP
+#endif //POWEROVERRIDE_POWER_OVERRIDE_HPP
