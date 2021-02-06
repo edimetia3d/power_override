@@ -4,6 +4,13 @@ PowerOverride is a lib to help you override symbols that loaded by dlsym
 
 Just compile to a shared lib, and use LD_PRELOAD.
 
+# Installation
+
+Just add_subdirectory().
+
+> Note: this project's CMakeLists is organized by `target_xxx` API. 
+i.e. `target_foo` must link `poweroverride` to let src files in `target_foo` access header files of `poweroverride`
+
 # Quick Start
 
 1. Only override functions loaded by `dlsym` in `libfoo.so`. Just define a function by using POWER_OVERRIDE
