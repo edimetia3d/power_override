@@ -7,6 +7,9 @@
 #include <string>
 
 #include <dlfcn.h>
+#include <link.h>
+
+#include "spdlog/spdlog.h"
 
 #include "poweroverride/tool/real_dlsym.hpp"
 
@@ -28,13 +31,14 @@ OverrideFuncRegister::OverrideFuncRegister(const char *filename,
                                            void *fn_ptr,
                                            const char *src_file,
                                            int src_line) {
-  printf("New override [%s] on disk [%s] reged in file: %s:%d\n", func_name, filename, src_file, src_line);
   auto handle = dlopen(filename, RTLD_LAZY);
   symbol_overrode_fn_map()[std::string(func_name)][handle] = fn_ptr;
+  spdlog::debug("func {}@{} in {}@{} reged at file: {}:{}", func_name, fn_ptr, filename, handle, src_file, src_line);
 }
 void *DlOpenSym(const char *filename, const char *symbol) {
   auto handle = dlopen(filename, RTLD_LAZY);
   auto ret = real_dlsym(handle, symbol);
+  spdlog::debug("{} get real symbol {}@{} in {}@{}", __func__, symbol, ret, filename, handle);
   return ret;
 }
 }
@@ -48,10 +52,19 @@ void *dlsym(void *handle, const char *symbol) {
 
     if (has_key(symbol_overrode_fn_map(), funcname)) {
       if (has_key(symbol_overrode_fn_map()[funcname], handle)) {
-        return symbol_overrode_fn_map()[funcname][handle];
+        auto ret = symbol_overrode_fn_map()[funcname][handle];
+        spdlog::debug("{} get symbol {}@{} in {}@{}", __func__, symbol, ret, "unkonwn", handle);
+        return ret;
+      } else {
+        link_map *lmap;
+        dlinfo(handle, RTLD_DI_LINKMAP, &lmap);
+        spdlog::info("No override for {}@{} found, with {}x\"{}\" registered",
+                     lmap->l_name,
+                     handle,
+                     symbol_overrode_fn_map()[funcname].size(),
+                     symbol);
       }
     }
-
   }
 
   return poweroverride::real_dlsym(handle, symbol);
