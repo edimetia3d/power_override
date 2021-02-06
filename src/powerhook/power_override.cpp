@@ -9,7 +9,7 @@
 #include <dlfcn.h>
 #include <cassert>
 
-#include "powerhook/real_dlsym.hpp"
+#include "powerhook/tool/real_dlsym.hpp"
 
 namespace powerhook {
 

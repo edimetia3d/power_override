@@ -5,7 +5,7 @@
 
 #include <dlfcn.h>
 
-#include "powerhook/real_dlsym.hpp"
+#include "real_dlsym.hpp"
 
 namespace powerhook {
 namespace tool {
