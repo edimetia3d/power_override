@@ -13,8 +13,8 @@ Just compile to a shared lib, and use LD_PRELOAD.
 "poweroverride/power_override.hpp"
 
 POWER_OVERRIDE(void, foo, (int a, int b), "libfoo.so") { // the filename rule is same as `dlopen`
-auto raw = RawFn();
-do_sth();
+  auto raw = RawFn();
+  do_sth();
 }
 ```
 
@@ -24,8 +24,8 @@ do_sth();
 ```cpp
 extern "C"{
 void foo(int a, int b){
-auto raw = dlsym(RTLD_NEXT, "foo");
-do_sth();
+  auto raw = dlsym(RTLD_NEXT, "foo");
+  do_sth();
 }
 }
 ```
@@ -38,8 +38,8 @@ do_sth();
 "poweroverride/power_override.hpp"
 
 POWER_OVERRIDE(void, foo, (int a, int b), "libbar.so") {
-auto raw = RawFn(); // Note, this RawFn() will return raw function pointer from "libbar.so" , not "libfoo.so"
-do_sth();
+  auto raw = RawFn(); // Note, this RawFn() will return raw function pointer from "libbar.so" , not "libfoo.so"
+  do_sth();
 }
 ```  
 
